@@ -1,0 +1,20 @@
+jobName: test-topic-creator
+kafka:
+  topics:
+    - name: test-topic-1
+      replicationFactor: 2
+      partitions: 8
+      configs:
+        - retention.bytes=4294967296
+        - retention.ms=259200000
+    - name: test-topic-2
+      replicationFactor: 1
+      partitions: 2
+      configs:
+        - retention.bytes=4294967296
+        - retention.ms=259200000
+zookeeper:
+  address: zookeeper:2181
+helmHook: pre-install,pre-upgrade
+imagePullSecrets:
+  - name:
