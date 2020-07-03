@@ -13,6 +13,11 @@ spec:
   # monitoring.
   ttlSecondsAfterFinished: 900
   template:
+    {{- with .Values.podAnnotations }}
+    metadata:
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end}}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
