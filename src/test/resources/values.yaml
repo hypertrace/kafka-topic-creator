@@ -18,3 +18,5 @@ zookeeper:
 helmHook: pre-install,pre-upgrade
 imagePullSecrets:
   - name:
+podAnnotations:
+  foo: "bar"
