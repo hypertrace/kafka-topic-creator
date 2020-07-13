@@ -13,3 +13,22 @@
 ###########
 # Job
 ###########
+
+image:
+  repository: hypertrace/kafka
+  tag: 0.1.1
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+resources: {}
+
+env: []
+
+nodeSelector: {}
+
+affinity: {}
+
+tolerations: {}
+
+securityContext: {}
