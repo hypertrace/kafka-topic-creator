@@ -27,7 +27,8 @@ spec:
       containers:
         {{- range $topic := .Values.kafka.topics }}
         - name: {{ $topic.name }}
-          image: solsson/kafka:2.1.0@sha256:ac3f06d87d45c7be727863f31e79fbfdcb9c610b51ba9cf03c75a95d602f15e1
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
           command:
             - "/bin/bash"
             - "-cex"
@@ -49,5 +50,25 @@ spec:
               --entity-type topics \
               --entity-name {{ $topic.name | quote }}
             {{- end }}
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          env:
+            {{- toYaml $.Values.env | nindent 12 }}
         {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   backoffLimit: 100
