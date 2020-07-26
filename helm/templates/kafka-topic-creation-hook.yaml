@@ -25,21 +25,21 @@ spec:
       {{- end }}
       restartPolicy: OnFailure
       containers:
-        {{- range $topic := .Values.kafka.topics }}
-        - name: {{ $topic.name }}
-          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
-          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+        - name: topic-creator
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - "/bin/bash"
             - "-cex"
             - |
+            {{- range $topic := .Values.kafka.topics }}
               /opt/kafka/bin/kafka-topics.sh --create \
               --if-not-exists \
               --zookeeper {{ $.Values.zookeeper.address | quote }} \
               --topic {{ $topic.name | quote }} \
-              {{- range $topic.configs }}
+            {{- range $topic.configs }}
               --config {{ . | quote }} \
-              {{- end }}
+            {{- end }}
               --replication-factor {{ $topic.replicationFactor | quote }} \
               --partitions {{ $topic.partitions | quote }}
             {{- if $topic.configs }}
@@ -50,11 +50,11 @@ spec:
               --entity-type topics \
               --entity-name {{ $topic.name | quote }}
             {{- end }}
+            {{- end }}
           resources:
-            {{- toYaml $.Values.resources | nindent 12 }}
+            {{- toYaml .Values.resources | nindent 12 }}
           env:
-            {{- toYaml $.Values.env | nindent 12 }}
-        {{- end }}
+            {{- toYaml .Values.env | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
