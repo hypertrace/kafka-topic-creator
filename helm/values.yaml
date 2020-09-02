@@ -32,3 +32,5 @@ affinity: {}
 tolerations: {}
 
 securityContext: {}
+
+podLabels: {}
