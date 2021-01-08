@@ -1,0 +1,24 @@
+name: Publish artifacts
+on:
+# Will only run when release is published. 
+  release:
+    types: 
+      - created
+  workflow_dispatch:
+
+jobs:
+  publish-helm-charts:
+    runs-on: ubuntu-20.04
+    steps:
+       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
+      - name: Checkout Repository
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
+   
+      - name: package and release charts
+        uses: hypertrace/github-actions/helm-gcs-publish@main
+        with: 
+          helm-gcs-credentials: ${{ secrets.HELM_GCS_CREDENTIALS }}
+          helm-gcs-repository: ${{ secrets.HELM_GCS_REPOSITORY }}
+
