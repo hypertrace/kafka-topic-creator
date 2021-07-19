@@ -37,22 +37,22 @@ spec:
             - "/bin/bash"
             - "-cex"
             - |
-            {{- range $topicName, $configs := $.Values.kafka.topics }}
+            {{- range $topicName, $topicConfigs := $.Values.kafka.topics }}
               /opt/kafka/bin/kafka-topics.sh --create \
               --if-not-exists \
               --zookeeper {{ $.Values.zookeeper.address | quote }} \
               --topic {{ $topicName | quote }} \
-            {{- range $configName, $configValue := $configs.configs }}
+            {{- range $configName, $configValue := $topicConfigs.configs }}
               --config "{{$configName}}={{int $configValue }}"  \
             {{- end }}
-              --replication-factor {{ $configs.replicationFactor | quote }} \
-              --partitions {{ $configs.partitions | quote }}
-            {{- if $configs.configs }}
+              --replication-factor {{ $topicConfigs.replicationFactor | quote }} \
+              --partitions {{ $topicConfigs.partitions | quote }}
+            {{- if $topicConfigs.configs }}
             {{- $comma := false }}
               /opt/kafka/bin/kafka-configs.sh --alter \
               --zookeeper {{ $.Values.zookeeper.address | quote }} \
               --add-config \
-              {{ range $i, $c := $configs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $i }}={{ int $c }}"{{- $comma = true -}}{{ end }} \
+              {{ range $i, $c := $topicConfigs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $i }}={{ int $c }}"{{- $comma = true -}}{{ end }} \
               --entity-type topics \
               --entity-name {{ $topicName | quote }}
           {{- end }}
