@@ -55,8 +55,8 @@ spec:
               {{ range $i, $c := $topicConfigs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $i }}={{ int $c }}"{{- $comma = true -}}{{ end }} \
               --entity-type topics \
               --entity-name {{ $topicName | quote }}
-          {{- end }}
-          {{- end }}
+            {{- end }}
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
