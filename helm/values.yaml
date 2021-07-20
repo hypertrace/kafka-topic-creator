@@ -34,3 +34,6 @@ tolerations: {}
 securityContext: {}
 
 podLabels: {}
+
+kafka:
+  topics: {}
