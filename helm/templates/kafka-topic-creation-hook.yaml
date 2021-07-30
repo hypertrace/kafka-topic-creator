@@ -49,7 +49,7 @@ spec:
               /opt/kafka/bin/kafka-configs.sh --alter \
               --zookeeper {{ $.Values.zookeeper.address | quote }} \
               --add-config \
-              {{ range $configKey, $configValue := $topicConfigs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $configKey }}={{ int $configValue }}"{{- $comma = true -}}{{ end }} \
+              {{ range $configKey, $configValue := $topicConfigs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $configKey }}={{ if or (kindIs "float64" $configValue) (kindIs "int" $configValue) (kindIs "int64" $configValue) }}{{ int $configValue }}{{ else }}{{ $configValue }}{{ end }}"{{- $comma = true -}}{{ end }} \
               --entity-type topics \
               --entity-name {{ $topicName | quote }}
             {{- end }}
