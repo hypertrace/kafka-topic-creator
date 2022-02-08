@@ -7,11 +7,8 @@ metadata:
   annotations:
     "helm.sh/hook": {{ .Values.helmHook }}
 spec:
-  # Cancel job if it has not finished after 3 minutes
-  activeDeadlineSeconds: 180
-  # Keep the job's pod around for 15 minutes. This will be better once we implement pod crashes and errors
-  # monitoring.
-  ttlSecondsAfterFinished: 900
+  activeDeadlineSeconds: {{ int .Values.activeDeadlineSeconds }}
+  ttlSecondsAfterFinished: {{ int .Values.ttlSecondsAfterFinished }}
   template:
     metadata:
       labels:
@@ -40,14 +37,29 @@ spec:
             {{- range $topicName, $topicConfigs := $.Values.kafka.topics }}
               /opt/kafka/bin/kafka-topics.sh --create \
               --if-not-exists \
+              {{- if $.Values.kafka.address }}
+              --bootstrap-server {{ $.Values.kafka.address | quote }} \
+              {{- else }}
               --zookeeper {{ $.Values.zookeeper.address | quote }} \
+              {{- end }}
               --topic {{ $topicName | quote }} \
+              {{- range $configKey, $configValue := $topicConfigs.configs }}
+              {{- if or (kindIs "float64" $configValue) (kindIs "int" $configValue) (kindIs "int64" $configValue) }}
+              --config {{ $configKey }}={{ int $configValue }} \
+              {{- else }}
+              --config {{ $configKey }}={{ $configValue | quote }} \
+              {{- end }}
+              {{- end }}
               --replication-factor {{ $topicConfigs.replicationFactor | quote }} \
               --partitions {{ $topicConfigs.partitions | quote }}
-            {{- if $topicConfigs.configs }}
+            {{- if and (not $.Values.skipUpdate) $topicConfigs.configs }}
             {{- $comma := false }}
               /opt/kafka/bin/kafka-configs.sh --alter \
+              {{- if $.Values.kafka.address }}
+              --bootstrap-server {{ $.Values.kafka.address | quote }} \
+              {{- else }}
               --zookeeper {{ $.Values.zookeeper.address | quote }} \
+              {{- end }}
               --add-config \
               {{ range $configKey, $configValue := $topicConfigs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $configKey }}={{ if or (kindIs "float64" $configValue) (kindIs "int" $configValue) (kindIs "int64" $configValue) }}{{ int $configValue }}{{ else }}{{ $configValue }}{{ end }}"{{- $comma = true -}}{{ end }} \
               --entity-type topics \
