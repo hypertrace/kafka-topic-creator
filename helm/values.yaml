@@ -16,7 +16,7 @@
 
 image:
   repository: hypertrace/kafka
-  tag: 0.1.10
+  tag: 0.2.0
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -35,12 +35,12 @@ securityContext: {}
 
 podLabels: {}
 
-activeDeadlineSeconds: 180
+activeDeadlineSeconds: 600
 
 ttlSecondsAfterFinished: 900
 
 kafka:
-  address: ""
+  address: "bootstrap:9092"
   topics: {}
 
 skipUpdate: false

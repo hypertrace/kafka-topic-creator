@@ -13,9 +13,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.jobName }}
-      {{- with .Values.podLabels }}
+        {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
@@ -37,17 +37,13 @@ spec:
             {{- range $topicName, $topicConfigs := $.Values.kafka.topics }}
               /opt/kafka/bin/kafka-topics.sh --create \
               --if-not-exists \
-              {{- if $.Values.kafka.address }}
               --bootstrap-server {{ $.Values.kafka.address | quote }} \
-              {{- else }}
-              --zookeeper {{ $.Values.zookeeper.address | quote }} \
-              {{- end }}
               --topic {{ $topicName | quote }} \
               {{- range $configKey, $configValue := $topicConfigs.configs }}
               {{- if or (kindIs "float64" $configValue) (kindIs "int" $configValue) (kindIs "int64" $configValue) }}
               --config {{ $configKey }}={{ int $configValue }} \
               {{- else }}
-              --config {{ $configKey }}={{ $configValue | quote }} \
+              --config {{ $configKey }}={{ $configValue | trimPrefix "[" | trimSuffix "]" | trim | quote }} \
               {{- end }}
               {{- end }}
               --replication-factor {{ $topicConfigs.replicationFactor | quote }} \
@@ -55,11 +51,7 @@ spec:
             {{- if and (not $.Values.skipUpdate) $topicConfigs.configs }}
             {{- $comma := false }}
               /opt/kafka/bin/kafka-configs.sh --alter \
-              {{- if $.Values.kafka.address }}
               --bootstrap-server {{ $.Values.kafka.address | quote }} \
-              {{- else }}
-              --zookeeper {{ $.Values.zookeeper.address | quote }} \
-              {{- end }}
               --add-config \
               {{ range $configKey, $configValue := $topicConfigs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $configKey }}={{ if or (kindIs "float64" $configValue) (kindIs "int" $configValue) (kindIs "int64" $configValue) }}{{ int $configValue }}{{ else }}{{ $configValue }}{{ end }}"{{- $comma = true -}}{{ end }} \
               --entity-type topics \
