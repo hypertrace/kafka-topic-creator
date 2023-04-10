@@ -1,0 +1,10 @@
+{{- if .Values.configMap.enabled }}
+apiVersion: batch/v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.jobName }}
+  labels:
+    release: {{ .Release.Name }}
+data:
+  key: value
+{{- end }}
