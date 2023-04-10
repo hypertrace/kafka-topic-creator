@@ -44,3 +44,6 @@ kafka:
   topics: {}
 
 skipUpdate: false
+
+configMap:
+  enabled: false
