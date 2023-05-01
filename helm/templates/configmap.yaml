@@ -7,5 +7,5 @@ metadata:
   labels:
     release: {{ .Release.Name }}
 data:
-  topics.json: |-
-    {{ toJson .Values.kafka }}
+  config.yaml: |-
+    {{- toYaml .Values.kafka | nindent 4 }}
