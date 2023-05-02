@@ -58,11 +58,7 @@ func GetTopicConfigs(a *kafka.AdminClient, topics []string) map[string]map[strin
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	duration, err := time.ParseDuration("60s")
-	if err != nil {
-		panic("ParseDuration(60s)")
-	}
-
+	duration := 60 * time.Second
 	results, err := a.DescribeConfigs(ctx, configs, kafka.SetAdminRequestTimeout(duration))
 	if err != nil {
 		fmt.Printf("Failed to describe topics: %v\n", err)
@@ -84,11 +80,7 @@ func CreateTopics(a *kafka.AdminClient, topics []kafka.TopicSpecification) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	duration, err := time.ParseDuration("60s")
-	if err != nil {
-		panic("ParseDuration(60s)")
-	}
-
+	duration := 60 * time.Second
 	results, err := a.CreateTopics(
 		ctx,
 		topics,
@@ -117,10 +109,7 @@ func AlterConfigs(a *kafka.AdminClient, resources []kafka.ConfigResource) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	duration, err := time.ParseDuration("60s")
-	if err != nil {
-		panic("ParseDuration(60s)")
-	}
+	duration := 60 * time.Second
 	results, err := a.AlterConfigs(ctx, resources, kafka.SetAdminRequestTimeout(duration))
 	if err != nil {
 		fmt.Printf("Failed to update topic configs: %v\n", err)
@@ -129,10 +118,6 @@ func AlterConfigs(a *kafka.AdminClient, resources []kafka.ConfigResource) {
 
 	error := false
 	for _, result := range results {
-		// fmt.Printf("update topic %s\n", result.Name)
-		// for _, entry := range result.Config {
-		// 	fmt.Printf("%s: %s\n", entry.Name, entry.Value)
-		// }
 		if result.Error.Code() != 0 {
 			fmt.Printf("Failed to update configs of topic %s\n", result)
 			error = true
@@ -242,6 +227,5 @@ func main() {
 			AlterConfigs(a, updatedTopics)
 		}
 	}
-	// fmt.Println(output)
 	a.Close()
 }
