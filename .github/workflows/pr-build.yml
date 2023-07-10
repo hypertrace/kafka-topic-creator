@@ -19,7 +19,7 @@ jobs:
       - name: validate charts
         uses: hypertrace/github-actions/validate-charts@main
         with:
-          chart-path: ./helm/ -f src/test/resources/values.yaml
+          chart-path: ./helm/
 
   scan-image:
     runs-on: ubuntu-22.04

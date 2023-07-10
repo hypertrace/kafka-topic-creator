@@ -16,7 +16,7 @@
 
 image:
   repository: hypertrace/kafka
-  tag: 0.2.2
+  tag: 0.2.3
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
