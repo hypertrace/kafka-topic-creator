@@ -1,0 +1,5 @@
+# org.scala-lang:scala-library (from upstream opensource dependency)
+CVE-2022-36944 exp:2023-09-30
+
+# org.xerial.snappy:snappy-java (from upstream opensource dependency)
+CVE-2023-34455 exp:2023-09-30
