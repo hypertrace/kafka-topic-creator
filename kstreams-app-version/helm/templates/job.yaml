@@ -23,77 +23,15 @@ spec:
         - name: kstreams-app-version
           image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tagOverride }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/sh", "-c"]
-          args:
-            - |-
-              namespace={{ .Release.Namespace | quote }}
-              wait={{ default 360 .Values.waitSeconds | quote }}
-
-              check_number() {
-                local number="$1"
-
-                if [ -z "$number" ]; then
-                  echo "\"$number\" is not a valid number"
-                  exit 1
-                fi
-
-                re='^[0-9]+$'
-                if [[ $number =~ $re ]] ; then
-                  echo
-                else
-                  echo "\"$number\" is not a valid number"
-                  exit 1
-                fi
-              }
-
-              finish() {
-                code=$?
-                curl -s -XPOST http://127.0.0.1:15020/quitquitquit || true
-                exit $code
-              }
-              trap finish EXIT
-
-              next_version=""
-              if [ -f /opt/versions/version ]; then
-                next_version=$(cat /opt/versions/version)
-              fi
-              echo "next_version: $next_version"
-
-              if [ -z "$next_version" ]; then
-                echo "failed to get next version from helm chart"
-                exit 1
-              fi
-
-              next_major_version=$(echo "$next_version" | awk -F'.' '{print $1}')
-              check_number "$next_major_version"
-
-              workloads=""
-              {{- range $workload := .Values.workloads }}
-              type={{ $workload.type | quote }}
-              workload={{ $workload.name | quote }}
-              container={{ $workload.container | quote }}
-
-              workload_version=$(kubectl -n $namespace get $type $workload  -o json | jq -r --arg container "$container" '.spec.template.spec.containers[] | select(.name==$container) | .image' | awk -F':' '{print $2}')
-              echo "workload_version: $workload_version"
-
-              if [ -z "$workload_version" ]; then
-                echo "failed to get current version of workload $type/$workload"
-                exit 1
-              fi
-
-              major_version=$(echo "$workload_version" | awk -F'.' '{print $1}')
-              check_number "$major_version"
-
-              if [ $major_version != $next_major_version ]; then
-                workloads="${workloads} ${type}/${workload}"
-              fi
-              {{- end }}
-
-              if [ -n "$workloads" ]; then
-                kubectl -n $namespace scale $workloads --replicas=0
-                date
-                sleep $wait
-              fi
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: WAIT_SECONDS
+              value: {{ int .Values.waitSeconds | quote }}
+            - name: WORKLOADS
+              value: "{{ range $workload := .Values.workloads }}{{ $workload.name }},{{ $workload.type }},{{ $workload.container }};{{ end }}"
           {{- with .Values.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}

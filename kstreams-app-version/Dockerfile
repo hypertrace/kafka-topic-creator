@@ -10,3 +10,9 @@ RUN apk add curl jq --no-cache && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/kubectl && \
     kubectl version --client
+
+COPY run.sh /opt/hypertrace/run.sh
+
+RUN chmod 755 /opt/hypertrace/run.sh
+
+ENTRYPOINT ["/opt/hypertrace/run.sh"]
