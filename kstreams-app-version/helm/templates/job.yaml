@@ -5,9 +5,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   annotations:
-    "helm.sh/hook": pre-upgrade
-    "helm.sh/hook-weight": "1"
-    "helm.sh/hook-delete-policy": before-hook-creation
+    {{- toYaml .Values.annotations | nindent 4 }}
   labels:
     app: {{ $jobName }}
     release: {{ .Release.Name }}

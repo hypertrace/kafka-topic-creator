@@ -8,6 +8,11 @@ imagePullSecrets: []
 serviceAccount:
   annotations: {}
 
+annotations:
+  "helm.sh/hook": pre-upgrade
+  "helm.sh/hook-weight": "1"
+  "helm.sh/hook-delete-policy": before-hook-creation
+
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
