@@ -55,6 +55,7 @@ jobs:
         with:
           tags: hypertrace/kstreams-app-version:test
           context: kstreams-app-version
+          cache-from: type=gha,scope=kstreams-app-version
           load: true
 
       - name: Scan kafka image

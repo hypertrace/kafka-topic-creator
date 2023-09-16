@@ -34,6 +34,8 @@ jobs:
         with:
           tags: hypertrace/kstreams-app-version:${{ steps.version.outputs.version }}
           context: kstreams-app-version
+          cache-to: type=gha,mode=max,scope=kstreams-app-version
+          cache-from: type=gha,scope=kstreams-app-version
           push: true
 
   publish-helm-charts:
