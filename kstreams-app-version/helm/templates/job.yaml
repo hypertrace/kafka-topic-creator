@@ -110,6 +110,6 @@ spec:
       volumes:
         - name: kstreams-app-version-{{ .Release.Name }}
           configMap:
-            name: kstreams-app-version-{{ .Release.Name }}
+            name: {{ default (printf "kstreams-app-version-%s" .Release.Name) .Values.configMapName }}
   ttlSecondsAfterFinished: {{ int .Values.ttlSecondsAfterFinished }}
 {{- end }}
