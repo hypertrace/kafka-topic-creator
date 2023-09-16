@@ -29,7 +29,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: WAIT_SECONDS
-              value: {{ int .Values.waitSeconds | quote }}
+              value: {{ int .Values.waitSeconds | default 360 | quote }}
             - name: WORKLOADS
               value: "{{ range $workload := .Values.workloads }}{{ $workload.name }},{{ $workload.type }},{{ $workload.container }};{{ end }}"
           {{- with .Values.securityContext }}
