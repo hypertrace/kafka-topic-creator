@@ -1,0 +1,39 @@
+{{- if .Values.workloads }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation
+  labels:
+    release: {{ $.Release.Name }}
+  name: kstreams-app-version-{{ .Release.Name }}
+rules:
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+    verbs:
+      - list
+      - get
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments/scale
+    verbs:
+      - patch
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets
+    verbs:
+      - list
+      - get
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets/scale
+    verbs:
+      - patch
+{{- end }}

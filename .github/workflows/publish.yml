@@ -7,7 +7,37 @@ on:
   workflow_dispatch:
 
 jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: echo version=$(./gradlew -q -Prelease :printVersion) >> $GITHUB_OUTPUT
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_PUBLISH_USER }}
+          password: ${{ secrets.DOCKERHUB_PUBLISH_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Publish kstreams-app-version image
+        uses: docker/build-push-action@v3
+        with:
+          tags: hypertrace/kstreams-app-version:${{ steps.version.outputs.version }}
+          context: kstreams-app-version
+          push: true
+
   publish-helm-charts:
+    needs: publish
     runs-on: ubuntu-22.04
     steps:
        # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
@@ -16,8 +46,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: package and release charts
+      - name: package and release kafka-topic-creator chart
         uses: hypertrace/github-actions/helm-gcs-publish@main
         with:
+          chart-path: ./kafka-topic-creator/helm/
           helm-gcs-credentials: ${{ secrets.HELM_GCS_CREDENTIALS }}
           helm-gcs-repository: ${{ secrets.HELM_GCS_REPOSITORY }}
+
+      - name: package and release kstreams-app-version chart
+        uses: hypertrace/github-actions/helm-gcs-publish@main
+        with:
+          chart-path: ./kstreams-app-version/helm/
+          helm-gcs-credentials: ${{ secrets.HELM_GCS_CREDENTIALS }}
+          helm-gcs-repository: ${{ secrets.HELM_GCS_REPOSITORY }}
+
+  publish-release-notes:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: hypertrace/github-actions/release-notes@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

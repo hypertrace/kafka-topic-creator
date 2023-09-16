@@ -1,0 +1,31 @@
+image:
+  repository: hypertrace/kstreams-app-version
+  tagOverride: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+serviceAccount:
+  annotations: {}
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  runAsUser: 65532
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+activeDeadlineSeconds: 900
+
+backoffLimit: 3
+
+restartPolicy: OnFailure
+
+ttlSecondsAfterFinished: 600
+
+waitSeconds: 360
+
+workloads: []

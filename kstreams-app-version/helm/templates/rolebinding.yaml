@@ -1,0 +1,20 @@
+{{- if .Values.workloads }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation
+  labels:
+    release: {{ $.Release.Name }}
+  name: kstreams-app-version-{{ .Release.Name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kstreams-app-version-{{ .Release.Name }}
+subjects:
+  - kind: ServiceAccount
+    name: kstreams-app-version-{{ .Release.Name }}
+    namespace: {{ $.Release.Namespace }}
+{{- end }}
