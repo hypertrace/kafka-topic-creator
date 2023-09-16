@@ -1,4 +1,5 @@
 {{- if .Values.workloads }}
+{{- $jobName := default (printf "kstreams-app-version-%s" .Release.Name) .Values.jobName }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -8,13 +9,13 @@ metadata:
     "helm.sh/hook-delete-policy": before-hook-creation
   labels:
     release: {{ $.Release.Name }}
-  name: kstreams-app-version-{{ .Release.Name }}
+  name: {{ $jobName }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: kstreams-app-version-{{ .Release.Name }}
+  name: {{ $jobName }}
 subjects:
   - kind: ServiceAccount
-    name: kstreams-app-version-{{ .Release.Name }}
+    name: {{ $jobName }}
     namespace: {{ $.Release.Namespace }}
 {{- end }}

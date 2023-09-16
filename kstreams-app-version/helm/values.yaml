@@ -28,6 +28,8 @@ ttlSecondsAfterFinished: 600
 
 waitSeconds: 360
 
+jobName: ""
+
 configMapName: ""
 
 workloads: []

@@ -1,4 +1,6 @@
 {{- if .Values.workloads }}
+{{- $jobName := default (printf "kstreams-app-version-%s" .Release.Name) .Values.jobName }}
+{{- $configMapName := default (printf "kstreams-app-version-%s" .Release.Name) .Values.configMapName }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -7,16 +9,16 @@ metadata:
     "helm.sh/hook-weight": "1"
     "helm.sh/hook-delete-policy": before-hook-creation
   labels:
-    app: kstreams-app-version-{{ .Release.Name }}
+    app: {{ $jobName }}
     release: {{ .Release.Name }}
-  name: kstreams-app-version-{{ .Release.Name }}
+  name: {{ $jobName }}
 spec:
   activeDeadlineSeconds: {{ int .Values.activeDeadlineSeconds }}
   backoffLimit: {{ int .Values.backoffLimit }}
   template:
     metadata:
       labels:
-        app: kstreams-app-version-{{ .Release.Name }}
+        app: {{ $jobName }}
         release: {{ .Release.Name }}
     spec:
       containers:
@@ -99,17 +101,17 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: kstreams-app-version-{{ .Release.Name }}
+            - name: {{ $configMapName }}
               mountPath: /opt/versions
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       restartPolicy: {{ .Values.restartPolicy }}
-      serviceAccountName: kstreams-app-version-{{ .Release.Name }}
+      serviceAccountName: {{ $jobName }}
       volumes:
-        - name: kstreams-app-version-{{ .Release.Name }}
+        - name: {{ $configMapName }}
           configMap:
-            name: {{ default (printf "kstreams-app-version-%s" .Release.Name) .Values.configMapName }}
+            name: {{ $configMapName }}
   ttlSecondsAfterFinished: {{ int .Values.ttlSecondsAfterFinished }}
 {{- end }}
