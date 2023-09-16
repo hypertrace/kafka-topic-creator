@@ -16,12 +16,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: validate charts
+      - name: validate kafka-topic-creator chart
         uses: hypertrace/github-actions/validate-charts@main
         with:
           chart-path: ./kafka-topic-creator/helm/
 
-      - name: validate charts
+      - name: validate kstreams-app-version chart
         uses: hypertrace/github-actions/validate-charts@main
         with:
           chart-path: ./kstreams-app-version/helm/
