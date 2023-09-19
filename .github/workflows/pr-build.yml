@@ -16,12 +16,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: validate charts
+      - name: validate kafka-topic-creator chart
         uses: hypertrace/github-actions/validate-charts@main
         with:
-          chart-path: ./helm/
+          chart-path: ./kafka-topic-creator/helm/
 
-  scan-image:
+      - name: validate kstreams-app-version-checker chart
+        uses: hypertrace/github-actions/validate-charts@main
+        with:
+          chart-path: ./kstreams-app-version-checker/helm/
+
+  build:
     runs-on: ubuntu-22.04
     steps:
       - name: Check out code
@@ -36,8 +41,8 @@ jobs:
       - name: Determine docker image
         id: docker
         run: |
-          echo repository=$(yq e '.image.repository' ./helm/values.yaml) >> $GITHUB_OUTPUT
-          echo tag=$(yq e '.image.tag' ./helm/values.yaml) >> $GITHUB_OUTPUT
+          echo repository=$(yq e '.image.repository' ./kafka-topic-creator/helm/values.yaml) >> $GITHUB_OUTPUT
+          echo tag=$(yq e '.image.tag' ./kafka-topic-creator/helm/values.yaml) >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -45,9 +50,26 @@ jobs:
       - name: Pull Docker Image
         run: docker pull ${{ steps.docker.outputs.repository }}:${{ steps.docker.outputs.tag }}
 
-      - name: Run Trivy vulnerability scanner for kafka image
+      - name: Build kstreams-app-version-checker image
+        uses: docker/build-push-action@v3
+        with:
+          tags: hypertrace/kstreams-app-version-checker:test
+          context: kstreams-app-version-checker
+          cache-from: type=gha,scope=kstreams-app-version-checker
+          load: true
+
+      - name: Scan kafka image
         uses: hypertrace/github-actions/trivy-image-scan@main
         with:
           image: ${{ steps.docker.outputs.repository }}
           tag: ${{ steps.docker.outputs.tag }}
           output-mode: github
+          category: kafka-topic-creator
+
+      - name: Scan kstreams-app-version-checker image
+        uses: hypertrace/github-actions/trivy-image-scan@main
+        with:
+          image: hypertrace/kstreams-app-version-checker
+          tag: test
+          output-mode: github
+          category: kstreams-app-version-checker

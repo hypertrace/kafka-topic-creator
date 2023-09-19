@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kstreams-app-version-checker
+description: check kafka streams app version
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

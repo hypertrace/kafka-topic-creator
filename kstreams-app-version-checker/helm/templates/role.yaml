@@ -1,0 +1,38 @@
+{{- if .Values.workloads }}
+{{- $jobName := default (printf "kstreams-app-version-checker-%s" .Release.Name) .Values.jobName }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  labels:
+    release: {{ $.Release.Name }}
+  name: {{ $jobName }}
+rules:
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+    verbs:
+      - list
+      - get
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments/scale
+    verbs:
+      - patch
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets
+    verbs:
+      - list
+      - get
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets/scale
+    verbs:
+      - patch
+{{- end }}
