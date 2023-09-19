@@ -17,11 +17,11 @@ Make the following changes in the application helm chart:
 
 2. Create a new file in `templates` folder with the following content:
    ```
-   {{- if (index .Values "check-kafka-consumer-group-version" "enabled") }}
+   {{- if (index .Values "kstreams-app-version" "enabled") }}
    apiVersion: v1
    kind: ConfigMap
    metadata:
-     name: check-kafka-consumer-group-version-{{ .Release.Name }}
+     name: kstreams-app-version-{{ .Release.Name }}
      labels:
        release: {{ .Release.Name }}
      annotations:
