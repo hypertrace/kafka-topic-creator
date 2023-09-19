@@ -1,6 +1,6 @@
 {{- if .Values.workloads }}
-{{- $jobName := default (printf "kstreams-app-version-%s" .Release.Name) .Values.jobName }}
-{{- $configMapName := default (printf "kstreams-app-version-%s" .Release.Name) .Values.configMapName }}
+{{- $jobName := default (printf "kstreams-app-version-checker-%s" .Release.Name) .Values.jobName }}
+{{- $configMapName := default (printf "kstreams-app-version-checker-%s" .Release.Name) .Values.configMapName }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -20,7 +20,7 @@ spec:
         release: {{ .Release.Name }}
     spec:
       containers:
-        - name: kstreams-app-version
+        - name: kstreams-app-version-checker
           image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tagOverride }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:

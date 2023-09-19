@@ -29,13 +29,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Publish kstreams-app-version image
+      - name: Publish kstreams-app-version-checker image
         uses: docker/build-push-action@v3
         with:
-          tags: hypertrace/kstreams-app-version:${{ steps.version.outputs.version }}
-          context: kstreams-app-version
-          cache-to: type=gha,mode=max,scope=kstreams-app-version
-          cache-from: type=gha,scope=kstreams-app-version
+          tags: hypertrace/kstreams-app-version-checker:${{ steps.version.outputs.version }}
+          context: kstreams-app-version-checker
+          cache-to: type=gha,mode=max,scope=kstreams-app-version-checker
+          cache-from: type=gha,scope=kstreams-app-version-checker
           push: true
 
   publish-helm-charts:
@@ -55,10 +55,10 @@ jobs:
           helm-gcs-credentials: ${{ secrets.HELM_GCS_CREDENTIALS }}
           helm-gcs-repository: ${{ secrets.HELM_GCS_REPOSITORY }}
 
-      - name: package and release kstreams-app-version chart
+      - name: package and release kstreams-app-version-checker chart
         uses: hypertrace/github-actions/helm-gcs-publish@main
         with:
-          chart-path: ./kstreams-app-version/helm/
+          chart-path: ./kstreams-app-version-checker/helm/
           helm-gcs-credentials: ${{ secrets.HELM_GCS_CREDENTIALS }}
           helm-gcs-repository: ${{ secrets.HELM_GCS_REPOSITORY }}
 

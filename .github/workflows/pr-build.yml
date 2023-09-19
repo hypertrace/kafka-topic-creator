@@ -21,10 +21,10 @@ jobs:
         with:
           chart-path: ./kafka-topic-creator/helm/
 
-      - name: validate kstreams-app-version chart
+      - name: validate kstreams-app-version-checker chart
         uses: hypertrace/github-actions/validate-charts@main
         with:
-          chart-path: ./kstreams-app-version/helm/
+          chart-path: ./kstreams-app-version-checker/helm/
 
   build:
     runs-on: ubuntu-22.04
@@ -50,12 +50,12 @@ jobs:
       - name: Pull Docker Image
         run: docker pull ${{ steps.docker.outputs.repository }}:${{ steps.docker.outputs.tag }}
 
-      - name: Build kstreams-app-version image
+      - name: Build kstreams-app-version-checker image
         uses: docker/build-push-action@v3
         with:
-          tags: hypertrace/kstreams-app-version:test
-          context: kstreams-app-version
-          cache-from: type=gha,scope=kstreams-app-version
+          tags: hypertrace/kstreams-app-version-checker:test
+          context: kstreams-app-version-checker
+          cache-from: type=gha,scope=kstreams-app-version-checker
           load: true
 
       - name: Scan kafka image
@@ -66,10 +66,10 @@ jobs:
           output-mode: github
           category: kafka-topic-creator
 
-      - name: Scan kstreams-app-version image
+      - name: Scan kstreams-app-version-checker image
         uses: hypertrace/github-actions/trivy-image-scan@main
         with:
-          image: hypertrace/kstreams-app-version
+          image: hypertrace/kstreams-app-version-checker
           tag: test
           output-mode: github
-          category: kstreams-app-version
+          category: kstreams-app-version-checker
