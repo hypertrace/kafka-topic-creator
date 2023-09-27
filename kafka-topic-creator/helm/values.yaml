@@ -41,8 +41,8 @@ ttlSecondsAfterFinished: 900
 
 kafka:
   address: "bootstrap:9092"
-  # for each integer value based key existing in topic config, sets value to max(in lowerBoundTopicsConfig, existing)
-  lowerBoundTopicsConfig: {}
+  # for each integer value based key provided in topic config, override value to max(in override, provided value)
+  minValueOverrideForTopicConfig: {}
   topics: {}
 
 skipUpdate: false
