@@ -53,7 +53,7 @@ spec:
               /opt/kafka/bin/kafka-configs.sh --alter \
               --bootstrap-server {{ $.Values.kafka.address | quote }} \
               --add-config \
-              {{ range $configKey, $configValue := $topicConfigs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $configKey }}={{ if or (kindIs "float64" $configValue) (kindIs "int" $configValue) (kindIs "int64" $configValue) }}{{ if and (hasKey $.Values.kafka.minValueOverrideForTopicConfig $configKey) (gt (int (get $.Values.kafka.minValueOverrideForTopicConfig $configKey)) (int $configValue)) }}{{ int (get $.Values.kafka.minValueOverrideForTopicConfig $configKey) }}{{ else }}{{ int $configValue }}{{ end }}{{ else }}{{ $configValue }}{{ end }}"{{- $comma = true -}}{{ end }} \
+              {{ range $configKey, $configValue := $topicConfigs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $configKey }}={{ if or (kindIs "float64" $configValue) (kindIs "int" $configValue) (kindIs "int64" $configValue) }}{{ if and (hasKey $.Values.kafka.minValueOverrideForTopicConfig $configKey) }}{{ max (int (get $.Values.kafka.minValueOverrideForTopicConfig $configKey)) (int $configValue) }}{{ else }}{{ int $configValue }}{{ end }}{{ else }}{{ $configValue }}{{ end }}"{{- $comma = true -}}{{ end }} \
               --entity-type topics \
               --entity-name {{ $topicName | quote }}
             {{- end }}
