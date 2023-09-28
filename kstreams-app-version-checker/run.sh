@@ -48,6 +48,8 @@ next_major_version=$(echo "$next_version" | awk -F'.' '{print $1}')
 check_number "$next_major_version"
 
 updated_workloads=""
+rm /tmp/updated_workloads.sh || true
+touch /tmp/updated_workloads.sh
 
 export IFS=";"
 for workload in $WORKLOADS; do
@@ -67,16 +69,13 @@ for workload in $WORKLOADS; do
   check_number "$current_major_version"
 
   if [ $current_major_version != $next_major_version ]; then
-    if [ -z "$updated_workloads" ]; then
-      updated_workloads="${type}/${name}"
-    else
-      updated_workloads="${updated_workloads} ${type}/${name}"
-    fi
+    echo "kubectl -n $NAMESPACE scale ${type} ${name} --replicas=0" >> /tmp/updated_workloads.sh
+    updated_workloads="true"
   fi
 done
 
 if [ -n "$updated_workloads" ]; then
-  kubectl -n $NAMESPACE scale $updated_workloads --replicas=0
+  /bin/sh -ex /tmp/updated_workloads.sh
   date
   sleep $WAIT_SECONDS
 fi
