@@ -11,7 +11,7 @@ Make the following changes in the application helm chart:
     dependencies:
       - name: kstreams-app-version-checker
         repository: https://storage.googleapis.com/hypertrace-helm-charts
-        version: 0.1.0
+        version: 1.0.1
         condition: kstreams-app-version-checker.enabled
    ```
 
@@ -21,13 +21,11 @@ Make the following changes in the application helm chart:
    apiVersion: v1
    kind: ConfigMap
    metadata:
-     name: kstreams-app-version-checker-{{ .Release.Name }}
+     name: kvck-{{ .Release.Name }}
      labels:
        release: {{ .Release.Name }}
      annotations:
-       "helm.sh/hook": pre-upgrade
-       "helm.sh/hook-weight": "1"
-       "helm.sh/hook-delete-policy": before-hook-creation
+       {{- toYaml (index .Values "kstreams-app-version-checker" "annotations") | nindent 4 }}
    data:
      version: {{ default .Chart.AppVersion .Values.image.tagOverride | quote }}
    {{- end }}
