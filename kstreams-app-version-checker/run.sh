@@ -74,6 +74,7 @@ for workload in $WORKLOADS; do
   fi
 done
 
+set -e
 if [ -n "$updated_workloads" ]; then
   /bin/sh -ex /tmp/updated_workloads.sh
   date
