@@ -67,7 +67,11 @@ for workload in $WORKLOADS; do
   check_number "$current_major_version"
 
   if [ $current_major_version != $next_major_version ]; then
-    updated_workloads="${updated_workloads} ${type}/${name}"
+    if [ -z "$updated_workloads" ]; then
+      updated_workloads="${type}/${name}"
+    else
+      updated_workloads="${updated_workloads} ${type}/${name}"
+    fi
   fi
 done
 
