@@ -1,5 +1,5 @@
 {{- if .Values.workloads }}
-{{- $jobName := default (printf "kstreams-app-version-checker-%s" .Release.Name) .Values.jobName }}
+{{- $jobName := default (printf "kvck-%s" .Release.Name) .Values.jobName }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
