@@ -15,8 +15,8 @@
 ###########
 
 image:
-  repository: hypertrace/kafka
-  tag: 0.2.3
+  repository: hypertrace/kafka-topic-creator
+  tag: ""
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -42,8 +42,3 @@ ttlSecondsAfterFinished: 900
 kafka:
   address: "bootstrap:9092"
   topics: {}
-
-skipUpdate: false
-
-configMap:
-  enabled: false

@@ -29,6 +29,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Publish kafka-topic-creator image
+        uses: docker/build-push-action@v3
+        with:
+          tags: hypertrace/kafka-topic-creator:${{ steps.version.outputs.version }}
+          context: kafka-topic-creator
+          cache-to: type=gha,mode=max,scope=kafka-topic-creator
+          cache-from: type=gha,scope=kafka-topic-creator
+          push: true
+
       - name: Publish kstreams-app-version-checker image
         uses: docker/build-push-action@v3
         with:
