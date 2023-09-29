@@ -4,7 +4,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -22,16 +24,16 @@ type Config struct {
 	Topics  map[string]KafkaTopic `yaml:"topics"`
 }
 
+var adminRequestTimeout = kafka.SetAdminRequestTimeout(60 * time.Second)
+
 func (config *Config) LoadConfiguration(file string) *Config {
 	yamlFile, err := os.ReadFile(file)
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		log.Panic(err.Error())
 	}
 	err = yaml.Unmarshal(yamlFile, config)
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		log.Panic(err.Error())
 	}
 	return config
 }
@@ -39,8 +41,7 @@ func (config *Config) LoadConfiguration(file string) *Config {
 func ListTopics(a *kafka.AdminClient) []string {
 	response, err := a.GetMetadata(nil, true, 60000)
 	if err != nil {
-		fmt.Printf("Failed to list topics: %v\n", err)
-		os.Exit(1)
+		log.Panicf("Failed to list topics: %v\n", err)
 	}
 	keys := make([]string, 0, len(response.Topics))
 	for k := range response.Topics {
@@ -55,14 +56,9 @@ func GetTopicConfigs(a *kafka.AdminClient, topics []string) map[string]map[strin
 		configs = append(configs, kafka.ConfigResource{Type: kafka.ResourceTopic, Name: t})
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	duration := 60 * time.Second
-	results, err := a.DescribeConfigs(ctx, configs, kafka.SetAdminRequestTimeout(duration))
+	results, err := a.DescribeConfigs(context.Background(), configs, adminRequestTimeout)
 	if err != nil {
-		fmt.Printf("Failed to describe topics: %v\n", err)
-		os.Exit(1)
+		log.Panicf("Failed to describe topics: %v\n", err)
 	}
 
 	output := make(map[string]map[string]string)
@@ -77,56 +73,45 @@ func GetTopicConfigs(a *kafka.AdminClient, topics []string) map[string]map[strin
 }
 
 func CreateTopics(a *kafka.AdminClient, topics []kafka.TopicSpecification) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	duration := 60 * time.Second
 	results, err := a.CreateTopics(
-		ctx,
-		topics,
-		kafka.SetAdminOperationTimeout(duration))
+		context.Background(),
+		topics, adminRequestTimeout)
 	if err != nil {
-		fmt.Printf("Failed to create topic: %v\n", err)
-		os.Exit(1)
+		log.Panicf("Failed to create topic: %v\n", err)
 	}
 
-	error := false
+	failed := false
 	for _, result := range results {
 		if result.Error.Code() != 0 {
-			fmt.Printf("Failed to create topic: %s\n", result)
-			error = true
+			log.Printf("Failed to create topic: %s\n\n", result)
+			failed = true
 		} else {
-			fmt.Printf("successfully created topic: %s\n", result.Topic)
+			log.Printf("successfully created topic: %s\n\n", result.Topic)
 		}
 	}
-	if error {
-		os.Exit(1)
+	if failed {
+		log.Panic("failed to create topics")
 	}
 
 }
 
 func AlterConfigs(a *kafka.AdminClient, resources []kafka.ConfigResource) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	duration := 60 * time.Second
-	results, err := a.AlterConfigs(ctx, resources, kafka.SetAdminRequestTimeout(duration))
+	results, err := a.AlterConfigs(context.Background(), resources, adminRequestTimeout)
 	if err != nil {
-		fmt.Printf("Failed to update topic configs: %v\n", err)
-		os.Exit(1)
+		log.Panicf("Failed to update topic configs: %v\n", err)
 	}
 
-	error := false
+	failed := false
 	for _, result := range results {
 		if result.Error.Code() != 0 {
-			fmt.Printf("Failed to update configs of topic %s\n", result)
-			error = true
+			log.Printf("Failed to update configs of topic %s\n", result)
+			failed = true
 		} else {
-			fmt.Printf("successfully updated topic: %s\n", result.Name)
+			log.Printf("successfully updated topic: %s\n", result.Name)
 		}
 	}
-	if error {
-		os.Exit(1)
+	if failed {
+		log.Panic("failed to update topics")
 	}
 }
 
@@ -137,11 +122,11 @@ func checkCleanupPolicy(value string) bool {
 	return false
 }
 
-func checkConfigs(topicConfig map[string]string, newConfig map[string]string) bool {
+func needsUpdate(topic string, topicConfig map[string]string, newConfig map[string]string) bool {
 	for key, newValue := range newConfig {
 		existingValue, ok := topicConfig[key]
 		if !ok {
-			fmt.Printf("WARNING: config key %s not found\n", key)
+			log.Printf("WARNING[%s]: config key %s not found in existing config\n", topic, key)
 			return true
 		}
 		if checkCleanupPolicy(newValue) {
@@ -151,16 +136,7 @@ func checkConfigs(topicConfig map[string]string, newConfig map[string]string) bo
 			existingValue = "compact,delete"
 		}
 		if newValue != existingValue {
-			fmt.Printf("WARNING: value for config %s does not match. %s != %s\n", key, existingValue, newValue)
-			return true
-		}
-	}
-	return false
-}
-
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
+			log.Printf("WARNING[%s]: value for config %s does not match. %s != %s\n", topic, key, existingValue, newValue)
 			return true
 		}
 	}
@@ -174,20 +150,19 @@ func main() {
 
 	var config Config
 	config.LoadConfiguration(*configpath)
-	// fmt.Printf("config: %v\n\n", config)
 
 	a, err := kafka.NewAdminClient(&kafka.ConfigMap{"bootstrap.servers": config.Address})
+	defer a.Close()
 	if err != nil {
-		fmt.Printf("Failed to create Admin client: %s\n", err)
-		os.Exit(1)
+		log.Panicf("Failed to create Admin client: %s\n", err)
 	}
 	topicList := ListTopics(a)
 
-	newTopics := []kafka.TopicSpecification{}
-	existingTopics := []string{}
+	var newTopics []kafka.TopicSpecification
+	var existingTopics []string
 
 	for topicName, topicConfig := range config.Topics {
-		if contains(topicList, topicName) {
+		if slices.Contains(topicList, topicName) {
 			existingTopics = append(existingTopics, topicName)
 		} else {
 			val, ok := topicConfig.Configs["cleanup.policy"]
@@ -200,18 +175,18 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Number of new topics: %d\n", len(newTopics))
+	log.Printf("Number of new topics: %d\n", len(newTopics))
 	if len(newTopics) > 0 {
 		CreateTopics(a, newTopics)
 	}
 
-	fmt.Printf("Number of existing topics: %d\n", len(existingTopics))
+	log.Printf("Number of existing topics: %d\n", len(existingTopics))
 	if len(existingTopics) > 0 {
 		updatedTopics := make([]kafka.ConfigResource, 0, len(existingTopics))
 		existingTopicConfigs := GetTopicConfigs(a, topicList)
 		for _, t := range existingTopics {
-			fmt.Printf("checking config for topic %s\n", t)
-			if checkConfigs(existingTopicConfigs[t], config.Topics[t].Configs) {
+			log.Printf("checking config for topic %s\n", t)
+			if needsUpdate(t, existingTopicConfigs[t], config.Topics[t].Configs) {
 				configs := make([]kafka.ConfigEntry, 0, len(config.Topics[t].Configs))
 				for k, v := range config.Topics[t].Configs {
 					if checkCleanupPolicy(v) {
@@ -222,10 +197,9 @@ func main() {
 				updatedTopics = append(updatedTopics, kafka.ConfigResource{Type: kafka.ResourceTopic, Name: t, Config: configs})
 			}
 		}
-		fmt.Printf("Number of updated topics: %d\n", len(updatedTopics))
+		log.Printf("Number of updated topics: %d\n", len(updatedTopics))
 		if len(updatedTopics) > 0 {
 			AlterConfigs(a, updatedTopics)
 		}
 	}
-	a.Close()
 }
