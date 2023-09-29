@@ -131,7 +131,7 @@ func getResolvedConfig(topic string, topicConfig, newConfig map[string]string, m
 	for key, newValue := range newConfig {
 		existingValue, ok := topicConfig[key]
 		if !ok {
-			log.Printf("WARNING[%s]: config key %s not found in existing config\n", topic, key)
+			log.Printf("WARNING[%s, %s]: config key not found in existing config\n", topic, key)
 			needsUpdate = true
 		}
 		if checkCleanupPolicy(existingValue) {
@@ -146,12 +146,12 @@ func getResolvedConfig(topic string, topicConfig, newConfig map[string]string, m
 				log.Panicf("new config for %s key for topic %s is not parseable as int: %s", key, topicConfig, newValue)
 			}
 			if inNewConfigValue < minOverrideValue {
-				log.Printf("MIN_OVERRIDING[%s]: config key %s in new config is %s, lower than min override %d\n", topic, key, newValue, minOverrideValue)
+				log.Printf("MIN_OVERRIDING[%s, %s]: in new config is %s, lower than min override %d\n", topic, key, newValue, minOverrideValue)
 				newValue = strconv.FormatInt(minOverrideValue, 10)
 			}
 		}
 		if newValue != existingValue {
-			log.Printf("WARNING[%s]: value for existing config %s does not match new expectation %s != %s\n", topic, key, existingValue, newValue)
+			log.Printf("WARNING[%s, %s]: value for existing config does not match new expectation %s != %s\n", topic, key, existingValue, newValue)
 			needsUpdate = true
 		}
 		resolvedConfig[key] = newValue
