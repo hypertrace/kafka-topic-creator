@@ -151,7 +151,7 @@ func getResolvedConfig(topic string, topicConfig, newConfig map[string]string, m
 			}
 		}
 		if newValue != existingValue {
-			log.Printf("WARNING[%s]: value for config %s does not match. %s != %s\n", topic, key, existingValue, newValue)
+			log.Printf("WARNING[%s]: value for existing config %s does not match new expectation %s != %s\n", topic, key, existingValue, newValue)
 			needsUpdate = true
 		}
 		resolvedConfig[key] = newValue
