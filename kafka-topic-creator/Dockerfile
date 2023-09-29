@@ -1,9 +1,9 @@
 FROM golang:1.19.0 AS builder
-COPY . /opt
+COPY src/main/go /opt
 WORKDIR /opt
 RUN env GOOS=linux GOARCH=amd64 go build
 
-FROM gcr.io/distroless/base-debian11
+FROM gcr.io/distroless/base-debian12
 WORKDIR /opt
 COPY --from=builder /opt/kafka-topic-creator /opt/kafka-topic-creator
 ENTRYPOINT ["/opt/kafka-topic-creator"]
