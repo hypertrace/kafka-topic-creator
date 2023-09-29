@@ -23,7 +23,9 @@ type Config struct {
 	Topics  map[string]KafkaTopic `yaml:"topics"`
 }
 
-var adminRequestTimeout = kafka.SetAdminRequestTimeout(60 * time.Second)
+const timeoutDuration = 60 * time.Second
+
+var adminRequestTimeout = kafka.SetAdminRequestTimeout(timeoutDuration)
 
 func (config *Config) LoadConfiguration(file string) *Config {
 	yamlFile, err := os.ReadFile(file)
@@ -38,7 +40,7 @@ func (config *Config) LoadConfiguration(file string) *Config {
 }
 
 func ListTopics(a *kafka.AdminClient) []string {
-	response, err := a.GetMetadata(nil, true, 60000)
+	response, err := a.GetMetadata(nil, true, int(timeoutDuration.Milliseconds()))
 	if err != nil {
 		log.Panicf("Failed to list topics: %v\n", err)
 	}
