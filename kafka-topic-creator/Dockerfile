@@ -1,4 +1,4 @@
-FROM golang:1.19.0 AS builder
+FROM golang:1.21.1 AS builder
 COPY src/main/go /opt
 WORKDIR /opt
 RUN env GOOS=linux GOARCH=amd64 go build
