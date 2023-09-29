@@ -175,6 +175,8 @@ func main() {
 		}
 	}
 
+	existingTopicConfigs := GetTopicConfigs(a, topicList)
+
 	log.Printf("Number of new topics: %d\n", len(newTopics))
 	if len(newTopics) > 0 {
 		CreateTopics(a, newTopics)
@@ -183,7 +185,6 @@ func main() {
 	log.Printf("Number of existing topics: %d\n", len(existingTopics))
 	if len(existingTopics) > 0 {
 		updatedTopics := make([]kafka.ConfigResource, 0, len(existingTopics))
-		existingTopicConfigs := GetTopicConfigs(a, topicList)
 		for _, t := range existingTopics {
 			log.Printf("checking config for topic %s\n", t)
 			if needsUpdate(t, existingTopicConfigs[t], config.Topics[t].Configs) {
