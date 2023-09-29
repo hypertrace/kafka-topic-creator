@@ -143,7 +143,7 @@ func getResolvedConfig(topic string, topicConfig, newConfig map[string]string, m
 		if minOverrideValue, isInOverride := minValueOverrideForTopicConfig[key]; isInOverride {
 			inNewConfigValue, err := strconv.ParseInt(newValue, 10, 64)
 			if err != nil {
-				log.Panicf("new config for %s key for topic %s is not parseable as int: %s", key, topicConfig, newValue)
+				log.Panicf("new config for %s key for topic %s is not parseable as int: %s", key, topic, newValue)
 			}
 			if inNewConfigValue < minOverrideValue {
 				log.Printf("MIN_OVERRIDING[%s, %s]: in new config is %s, lower than min override %d\n", topic, key, newValue, minOverrideValue)
