@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"slices"
@@ -146,7 +145,7 @@ func needsUpdate(topic string, topicConfig map[string]string, newConfig map[stri
 func main() {
 	configpath := flag.String("configpath", "/opt/kafka/config.yaml", "config file path")
 	flag.Parse()
-	fmt.Printf("configpath: %s\n", *configpath)
+	log.Printf("configpath: %s\n", *configpath)
 
 	var config Config
 	config.LoadConfiguration(*configpath)
