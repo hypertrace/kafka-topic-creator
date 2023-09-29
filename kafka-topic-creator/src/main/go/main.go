@@ -133,7 +133,6 @@ func getResolvedConfig(topic string, topicConfig, newConfig map[string]string, m
 		if !ok {
 			log.Printf("WARNING[%s]: config key %s not found in existing config\n", topic, key)
 			needsUpdate = true
-			break
 		}
 		if checkCleanupPolicy(existingValue) {
 			existingValue = "compact,delete"
@@ -154,7 +153,6 @@ func getResolvedConfig(topic string, topicConfig, newConfig map[string]string, m
 		if newValue != existingValue {
 			log.Printf("WARNING[%s]: value for config %s does not match. %s != %s\n", topic, key, existingValue, newValue)
 			needsUpdate = true
-			break
 		}
 		resolvedConfig[key] = newValue
 	}
