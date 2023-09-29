@@ -21,47 +21,22 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end}}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      restartPolicy: OnFailure
       containers:
         - name: topic-creator
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          image: {{ .Values.image.repository }}:{{ default .Values.image.tag .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - "/bin/bash"
-            - "-cex"
-            - |
-            {{- range $topicName, $topicConfigs := $.Values.kafka.topics }}
-              /opt/kafka/bin/kafka-topics.sh --create \
-              --if-not-exists \
-              --bootstrap-server {{ $.Values.kafka.address | quote }} \
-              --topic {{ $topicName | quote }} \
-              {{- range $configKey, $configValue := $topicConfigs.configs }}
-              {{- if or (kindIs "float64" $configValue) (kindIs "int" $configValue) (kindIs "int64" $configValue) }}
-              --config {{ $configKey }}={{ int $configValue }} \
-              {{- else }}
-              --config {{ $configKey }}={{ $configValue | trimPrefix "[" | trimSuffix "]" | trim | quote }} \
-              {{- end }}
-              {{- end }}
-              --replication-factor {{ $topicConfigs.replicationFactor | quote }} \
-              --partitions {{ $topicConfigs.partitions | quote }}
-            {{- if and (not $.Values.skipUpdate) $topicConfigs.configs }}
-            {{- $comma := false }}
-              /opt/kafka/bin/kafka-configs.sh --alter \
-              --bootstrap-server {{ $.Values.kafka.address | quote }} \
-              --add-config \
-              {{ range $configKey, $configValue := $topicConfigs.configs }}{{ if $comma }}{{ printf "," }}{{ end }}"{{ $configKey }}={{ if or (kindIs "float64" $configValue) (kindIs "int" $configValue) (kindIs "int64" $configValue) }}{{ if and (hasKey $.Values.kafka.minValueOverrideForTopicConfig $configKey) }}{{ max (int (get $.Values.kafka.minValueOverrideForTopicConfig $configKey)) (int $configValue) }}{{ else }}{{ int $configValue }}{{ end }}{{ else }}{{ $configValue }}{{ end }}"{{- $comma = true -}}{{ end }} \
-              --entity-type topics \
-              --entity-name {{ $topicName | quote }}
-            {{- end }}
-            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
             {{- toYaml .Values.env | nindent 12 }}
+          volumeMounts:
+            - name: configs
+              mountPath: /opt/kafka
+      restartPolicy: OnFailure
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -78,4 +53,8 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: configs
+          configMap:
+            name: {{ .Values.jobName }}
   backoffLimit: 100

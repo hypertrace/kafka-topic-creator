@@ -15,8 +15,8 @@
 ###########
 
 image:
-  repository: hypertrace/kafka
-  tag: 0.2.3
+  repository: hypertrace/kafka-topic-creator
+  tag: ""
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -41,11 +41,4 @@ ttlSecondsAfterFinished: 900
 
 kafka:
   address: "bootstrap:9092"
-  # for each integer value based key provided in topic config, override value to max(in override, provided value)
-  minValueOverrideForTopicConfig: {}
   topics: {}
-
-skipUpdate: false
-
-configMap:
-  enabled: false

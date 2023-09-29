@@ -1,6 +1,6 @@
 {{- if .Values.workloads }}
-{{- $jobName := default (printf "kstreams-app-version-checker-%s" .Release.Name) .Values.jobName }}
-{{- $configMapName := default (printf "kstreams-app-version-checker-%s" .Release.Name) .Values.configMapName }}
+{{- $jobName := default (printf "kvck-%s" .Release.Name) .Values.jobName }}
+{{- $configMapName := default (printf "kvck-%s" .Release.Name) .Values.configMapName }}
 apiVersion: batch/v1
 kind: Job
 metadata:

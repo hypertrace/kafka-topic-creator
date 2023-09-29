@@ -48,12 +48,21 @@ next_major_version=$(echo "$next_version" | awk -F'.' '{print $1}')
 check_number "$next_major_version"
 
 updated_workloads=""
+rm /tmp/updated_workloads.sh || true
+touch /tmp/updated_workloads.sh
 
 export IFS=";"
 for workload in $WORKLOADS; do
   name=$(echo $workload | awk -F',' '{print $1}')
   type=$(echo $workload | awk -F',' '{print $2}')
   container=$(echo $workload | awk -F',' '{print $3}')
+
+  # ignore workload if it does not exist.
+  kubectl -n $NAMESPACE get $type $name
+  if [ $? -ne 0 ]; then
+    echo "workload ${type}/${name} does not exist."
+    continue
+  fi
 
   current_version=$(kubectl -n $NAMESPACE get $type $name  -o json | jq -r --arg container "$container" '.spec.template.spec.containers[] | select(.name==$container) | .image' | awk -F':' '{print $2}')
   echo "current_version: $current_version"
@@ -67,12 +76,14 @@ for workload in $WORKLOADS; do
   check_number "$current_major_version"
 
   if [ $current_major_version != $next_major_version ]; then
-    updated_workloads="${updated_workloads} ${type}/${name}"
+    echo "kubectl -n $NAMESPACE scale ${type} ${name} --replicas=0" >> /tmp/updated_workloads.sh
+    updated_workloads="true"
   fi
 done
 
+set -e
 if [ -n "$updated_workloads" ]; then
-  kubectl -n $NAMESPACE scale $updated_workloads --replicas=0
+  /bin/sh -ex /tmp/updated_workloads.sh
   date
   sleep $WAIT_SECONDS
 fi
