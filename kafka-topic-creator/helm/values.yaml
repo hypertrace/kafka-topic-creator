@@ -42,3 +42,6 @@ ttlSecondsAfterFinished: 900
 kafka:
   address: "bootstrap:9092"
   topics: {}
+  # for these keys in minValueOverrideForTopicConfig, we will set for all topics to value here if either not set or when lower is provided
+  # ensure provided value for these keys is a 64 bit integer, else job will throw an error
+  minValueOverrideForTopicConfig: {}

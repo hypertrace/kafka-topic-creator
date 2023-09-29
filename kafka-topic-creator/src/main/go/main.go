@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"slices"
+	"strconv"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -19,8 +20,9 @@ type KafkaTopic struct {
 }
 
 type Config struct {
-	Address string                `yaml:"address"`
-	Topics  map[string]KafkaTopic `yaml:"topics"`
+	Address                        string                `yaml:"address"`
+	Topics                         map[string]KafkaTopic `yaml:"topics"`
+	MinValueOverrideForTopicConfig map[string]int64      `yaml:"minValueOverrideForTopicConfig"`
 }
 
 const timeoutDuration = 60 * time.Second
@@ -123,25 +125,40 @@ func checkCleanupPolicy(value string) bool {
 	return false
 }
 
-func needsUpdate(topic string, topicConfig map[string]string, newConfig map[string]string) bool {
+func getResolvedConfig(topic string, topicConfig, newConfig map[string]string, minValueOverrideForTopicConfig map[string]int64) (map[string]string, bool) {
+	resolvedConfig := make(map[string]string) // new config applied with overrides
+	needsUpdate := false
 	for key, newValue := range newConfig {
 		existingValue, ok := topicConfig[key]
 		if !ok {
 			log.Printf("WARNING[%s]: config key %s not found in existing config\n", topic, key)
-			return true
-		}
-		if checkCleanupPolicy(newValue) {
-			newValue = "compact,delete"
+			needsUpdate = true
+			break
 		}
 		if checkCleanupPolicy(existingValue) {
 			existingValue = "compact,delete"
 		}
+		if checkCleanupPolicy(newValue) {
+			newValue = "compact,delete"
+		}
+		if minOverrideValue, isInOverride := minValueOverrideForTopicConfig[key]; isInOverride {
+			inNewConfigValue, err := strconv.ParseInt(newValue, 10, 64)
+			if err != nil {
+				log.Panicf("new config for %s key for topic %s is not parseable as int: %s", key, topicConfig, newValue)
+			}
+			if inNewConfigValue < minOverrideValue {
+				log.Printf("MIN_OVERRIDING[%s]: config key %s in new config is %s, lower than min override %d\n", topic, key, newValue, minOverrideValue)
+				newValue = strconv.FormatInt(minOverrideValue, 10)
+			}
+		}
 		if newValue != existingValue {
 			log.Printf("WARNING[%s]: value for config %s does not match. %s != %s\n", topic, key, existingValue, newValue)
-			return true
+			needsUpdate = true
+			break
 		}
+		resolvedConfig[key] = newValue
 	}
-	return false
+	return resolvedConfig, needsUpdate
 }
 
 func main() {
@@ -188,12 +205,9 @@ func main() {
 		updatedTopics := make([]kafka.ConfigResource, 0, len(existingTopics))
 		for _, t := range existingTopics {
 			log.Printf("checking config for topic %s\n", t)
-			if needsUpdate(t, existingTopicConfigs[t], config.Topics[t].Configs) {
-				configs := make([]kafka.ConfigEntry, 0, len(config.Topics[t].Configs))
-				for k, v := range config.Topics[t].Configs {
-					if checkCleanupPolicy(v) {
-						v = "compact,delete"
-					}
+			if resolvedConfig, needsUpdate := getResolvedConfig(t, existingTopicConfigs[t], config.Topics[t].Configs, config.MinValueOverrideForTopicConfig); needsUpdate {
+				configs := make([]kafka.ConfigEntry, 0, len(resolvedConfig))
+				for k, v := range resolvedConfig {
 					configs = append(configs, kafka.ConfigEntry{Name: k, Value: v})
 				}
 				updatedTopics = append(updatedTopics, kafka.ConfigResource{Type: kafka.ResourceTopic, Name: t, Config: configs})
