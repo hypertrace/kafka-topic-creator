@@ -84,10 +84,10 @@ func CreateTopics(a *kafka.AdminClient, topics []kafka.TopicSpecification) {
 	failed := false
 	for _, result := range results {
 		if result.Error.Code() != 0 {
-			log.Printf("Failed to create topic: %s\n\n", result)
+			log.Printf("Failed to create topic: %s\n", result)
 			failed = true
 		} else {
-			log.Printf("successfully created topic: %s\n\n", result.Topic)
+			log.Printf("successfully created topic: %s\n", result.Topic)
 		}
 	}
 	if failed {
