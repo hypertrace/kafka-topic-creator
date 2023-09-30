@@ -156,6 +156,13 @@ func getResolvedConfig(topic string, topicConfig, newConfig map[string]string, m
 		}
 		resolvedConfig[key] = newValue
 	}
+	for overrideKey, overrideValue := range minValueOverrideForTopicConfig {
+		if _, ok := resolvedConfig[overrideKey]; !ok {
+			log.Printf("WARNING[%s, %s]: config key not found in new config, but override available, using it\n", topic, overrideKey)
+			resolvedConfig[overrideKey] = strconv.FormatInt(overrideValue, 10)
+			needsUpdate = true
+		}
+	}
 	return resolvedConfig, needsUpdate
 }
 
