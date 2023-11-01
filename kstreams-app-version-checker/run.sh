@@ -64,7 +64,7 @@ for workload in $WORKLOADS; do
     continue
   fi
 
-  current_version=$(kubectl -n $NAMESPACE get $type $name  -o json | jq -r --arg container "$container" '.spec.template.spec.containers[] | select(.name==$container) | .image' | awk -F':' '{print $2}')
+  current_version=$(kubectl -n $NAMESPACE get $type $name  -o json | jq -r --arg container "$container" '.spec.template.spec.containers[] | select(.name=="$container") | .image' | awk -F':' '{print $2}')
   echo "current_version: $current_version"
 
   if [ -z "$current_version" ]; then
