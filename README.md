@@ -1,6 +1,6 @@
 # kafka-topic-creator
 Helm chart to create Kafka topic(s) via helm hook
-
+test
 ## Usage
 If any of the Kafka producer jobs wants to create Kafka topic(s) via a helm hook,
 Add the following to `parentchart/Chart.yaml`
