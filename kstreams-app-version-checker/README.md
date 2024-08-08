@@ -44,3 +44,4 @@ Make the following changes in the application helm chart:
          type: statefulset
          container: raw-spans-grouper
    ```
+
