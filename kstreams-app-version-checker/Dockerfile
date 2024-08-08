@@ -15,4 +15,6 @@ COPY run.sh /opt/hypertrace/run.sh
 
 RUN chmod 755 /opt/hypertrace/run.sh
 
+RUN touch /tmp/updated_workloads.sh
+
 ENTRYPOINT ["/opt/hypertrace/run.sh"]
