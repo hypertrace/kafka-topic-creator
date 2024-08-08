@@ -23,7 +23,6 @@ spec:
         - name: kstreams-app-version-checker
           image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tagOverride }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/sh", "-ce", "cat /tmp/updated_workloads.sh |  /bin/sh"]
           env:
             - name: NAMESPACE
               valueFrom:
