@@ -37,12 +37,19 @@ next_version=""
 if [ -f /opt/versions/version ]; then
   next_version=$(cat /opt/versions/version)
 fi
-echo "next_version: $next_version"
+echo "next_version_tag: $next_version"
 
 if [ -z "$next_version" ]; then
   echo "failed to get next version from helm chart"
   exit 1
 fi
+
+# The mono-repo-mode in ti uses the tag like workload-name-tv-1.2.3 where -tv- is the delim
+if [[ $next_version =~ "-tv-" ]]; then
+  next_version=$(echo "$next_version" | tr -s '\-tv\-' ' ' | cut -d' ' -f2)
+fi
+
+echo "next_version: $next_version"
 
 next_major_version=$(echo "$next_version" | awk -F'.' '{print $1}')
 check_number "$next_major_version"
@@ -65,12 +72,19 @@ for workload in $WORKLOADS; do
   fi
 
   current_version=$(kubectl -n $NAMESPACE get $type $name  -o json | jq -r --arg container "$container" '.spec.template.spec.containers[] | select(.name==$container) | .image' | awk -F':' '{print $2}')
-  echo "current_version: $current_version"
+  echo "current_version_tag: $current_version"
 
   if [ -z "$current_version" ]; then
     echo "failed to get current version of workload $type/$name"
     exit 1
   fi
+
+  # The mono-repo-mode in ti uses the tag like workload-name-tv-1.2.3 where -tv- is the delim
+  if [[ $current_version =~ "-tv-" ]]; then
+    current_version=$(echo "$current_version" | tr -s '\-tv\-' ' ' | cut -d' ' -f2)
+  fi
+
+  echo "current_version: $current_version"
 
   current_major_version=$(echo "$current_version" | awk -F'.' '{print $1}')
   check_number "$current_major_version"
