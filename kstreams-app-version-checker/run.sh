@@ -55,8 +55,6 @@ next_major_version=$(echo "$next_version" | awk -F'.' '{print $1}')
 check_number "$next_major_version"
 
 updated_workloads=""
-rm /tmp/updated_workloads.sh || true
-touch /tmp/updated_workloads.sh
 
 export IFS=";"
 for workload in $WORKLOADS; do
