@@ -18,6 +18,9 @@ spec:
       labels:
         app: {{ $jobName }}
         release: {{ .Release.Name }}
+        {{- with .Values.podLabels}}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.podSecurityContext }}
       securityContext:

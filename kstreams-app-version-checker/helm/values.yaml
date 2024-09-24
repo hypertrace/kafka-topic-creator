@@ -42,3 +42,4 @@ workloads: []
 resources: {}
 containerSecurityContext: {}
 podSecurityContext: {}
+podLabels: {}
