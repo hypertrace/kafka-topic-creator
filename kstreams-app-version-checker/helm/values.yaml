@@ -40,6 +40,15 @@ configMapName: ""
 workloads: []
 
 resources: {}
-containerSecurityContext: {}
+
 podSecurityContext: {}
+
+containerSecurityContext: {}
+
 podLabels: {}
+
+podAnnotations: {}
+
+commonPodLabels: {}
+
+commonPodAnnotations: {}

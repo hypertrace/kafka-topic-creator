@@ -35,6 +35,12 @@ securityContext: {}
 
 podLabels: {}
 
+podAnnotations: {}
+
+commonPodLabels: {}
+
+commonPodAnnotations: {}
+
 activeDeadlineSeconds: 600
 
 ttlSecondsAfterFinished: 900
