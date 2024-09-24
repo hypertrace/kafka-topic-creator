@@ -1,6 +1,6 @@
-FROM alpine:3.18
+FROM alpine:3.20
 
-ENV KUBECTL_VERSION=v1.28.12
+ENV KUBECTL_VERSION=v1.28.14
 
 RUN apk add curl jq --no-cache && \
     curl -LO "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \

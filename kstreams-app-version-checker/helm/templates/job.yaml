@@ -19,9 +19,17 @@ spec:
         app: {{ $jobName }}
         release: {{ .Release.Name }}
     spec:
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: kstreams-app-version-checker
           image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tagOverride }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: NAMESPACE
@@ -32,7 +40,7 @@ spec:
               value: {{ int .Values.waitSeconds | default 360 | quote }}
             - name: WORKLOADS
               value: "{{ range $workload := .Values.workloads }}{{ $workload.name }},{{ $workload.type }},{{ $workload.container }};{{ end }}"
-          {{- with .Values.securityContext }}
+          {{- with .Values.containerSecurityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
