@@ -1,14 +1,2 @@
-# org.scala-lang:scala-library (from upstream opensource dependency)
-CVE-2022-36944 exp:2023-09-30
-
-# org.xerial.snappy:snappy-java (from upstream opensource dependency)
-CVE-2023-34453 exp:2023-09-30
-
-# org.xerial.snappy:snappy-java (from upstream opensource dependency)
-CVE-2023-34454 exp:2023-09-30
-
-# org.xerial.snappy:snappy-java (from upstream opensource dependency)
-CVE-2023-34455 exp:2023-09-30
-
 # usr/local/bin/kubectl (gobinary)
-CVE-2023-2253 exp:2023-09-30
+CVE-2024-34156 exp:2024-10-31
