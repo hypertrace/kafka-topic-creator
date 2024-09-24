@@ -16,23 +16,31 @@ spec:
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      {{- with .Values.podAnnotations }}
-      annotations:
+        {{- with .Values.commonPodLabels }}
         {{- toYaml . | nindent 8 }}
-      {{- end}}
+        {{- end }}
+      {{- if or .Values.podAnnotations .Values.commonPodAnnotations }}
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end}}
+        {{- with .Values.commonPodAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end}}
+      {{- end }}
     spec:
       containers:
         - name: topic-creator
           image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
-          {{- with .Values.containerSecurityContext }}
-          securityContext:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
             {{- toYaml .Values.env | nindent 12 }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: configs
               mountPath: /opt/kafka
