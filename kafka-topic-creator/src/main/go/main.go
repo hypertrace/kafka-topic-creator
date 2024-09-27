@@ -206,15 +206,14 @@ func main() {
 	maxNonChangelogPartitions := 0
 
 	for topicName, topicConfig := range config.Topics {
-		if !isChangelogTopic(topicName) {
+		if isChangelogTopic(topicName) {
+			changeLogTopics = append(changeLogTopics, topicName)
+		} else {
 			maxNonChangelogPartitions = max(maxNonChangelogPartitions, topicConfig.NumPartitions)
 		}
 	}
 
 	for topicName, topicConfig := range config.Topics {
-		if isChangelogTopic(topicName) {
-			changeLogTopics = append(changeLogTopics, topicName)
-		}
 		if slices.Contains(topicList, topicName) {
 			existingTopics = append(existingTopics, topicName)
 		} else {
