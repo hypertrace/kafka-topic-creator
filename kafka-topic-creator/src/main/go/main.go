@@ -238,9 +238,9 @@ func main() {
 
 	if config.InferChangelogPartitions {
 		log.Printf("[WARNING] infer changelog topic partitions is enabled, setting partitions to %v...\n", maxNonChangelogPartitions)
-		changeLogTopicPartitions := GetPartitionCounts(a, changeLogTopics)
+		changelogTopicPartitions := GetPartitionCounts(a, changeLogTopics)
 		var updatePartitionSpecs []kafka.PartitionsSpecification
-		for topic, partitionCnt := range changeLogTopicPartitions {
+		for topic, partitionCnt := range changelogTopicPartitions {
 			if partitionCnt < maxNonChangelogPartitions {
 				log.Printf("updating partition count for [%v] from %v to %v\n", topic, partitionCnt, maxNonChangelogPartitions)
 				updatePartitionSpecs = append(updatePartitionSpecs, kafka.PartitionsSpecification{
