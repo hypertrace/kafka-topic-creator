@@ -86,7 +86,7 @@ func GetPartitionCounts(a *kafka.AdminClient, topics []string) map[string]int {
 	if err != nil {
 		log.Panicf("Failed to describe topics: %v\n", err)
 	}
-	var partitionCounts map[string]int
+	partitionCounts := make(map[string]int)
 	for _, information := range describeTopicResult.TopicDescriptions {
 		partitionCounts[information.Name] = len(information.Partitions)
 	}
