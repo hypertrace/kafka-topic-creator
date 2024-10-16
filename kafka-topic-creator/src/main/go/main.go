@@ -249,11 +249,13 @@ func main() {
 				})
 			}
 		}
-		_, err := a.CreatePartitions(context.Background(), updatePartitionSpecs, adminRequestTimeout)
-		if err != nil {
-			log.Panic("failed to update partitions")
+		if len(updatePartitionSpecs) > 0 {
+			_, err := a.CreatePartitions(context.Background(), updatePartitionSpecs, adminRequestTimeout)
+			if err != nil {
+				log.Panic("failed to update partitions")
+			}
+			log.Printf("Finished updating partitions of %v changelog topics\n", len(updatePartitionSpecs))
 		}
-		log.Printf("Finished updating partitions of %v changelog topics\n", len(updatePartitionSpecs))
 	}
 
 	log.Printf("Number of existing topics: %d\n", len(existingTopics))
