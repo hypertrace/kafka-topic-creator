@@ -224,7 +224,11 @@ func main() {
 				}
 			}
 			if isChangelogTopic(topicName) {
-				newTopics = append(newTopics, kafka.TopicSpecification{Topic: topicName, NumPartitions: maxNonChangelogPartitions, ReplicationFactor: topicConfig.ReplicationFactor, Config: topicConfig.Configs})
+				if config.InferChangelogPartitions {
+					newTopics = append(newTopics, kafka.TopicSpecification{Topic: topicName, NumPartitions: maxNonChangelogPartitions, ReplicationFactor: topicConfig.ReplicationFactor, Config: topicConfig.Configs})
+				} else {
+					newTopics = append(newTopics, kafka.TopicSpecification{Topic: topicName, NumPartitions: topicConfig.NumPartitions, ReplicationFactor: topicConfig.ReplicationFactor, Config: topicConfig.Configs})
+				}
 			} else {
 				newTopics = append(newTopics, kafka.TopicSpecification{Topic: topicName, NumPartitions: topicConfig.NumPartitions, ReplicationFactor: topicConfig.ReplicationFactor, Config: topicConfig.Configs})
 			}
