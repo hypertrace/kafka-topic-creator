@@ -7,7 +7,7 @@ Add the following to `parentchart/Chart.yaml`
 ```$yaml
 dependencies:
   - name: kafka-topic-creator
-    repository: "https://hypertrace-helm-charts.storage.googleapis.com"
+    repository: "@traceable"
     version: 0.1.0
 ```
 
@@ -18,15 +18,15 @@ kafka-topic-creator:
   jobName: test-topic-creator
   helmHook: pre-install,pre-upgrade
   kafka:
+    address: "bootstrap:9092"
     topics:
-      - name: test-topic
+      test-topic
         replicationFactor: 2
         partitions: 8
         configs:
-          - retention.bytes=4294967296
-          - retention.ms=259200000
-  zookeeper:
-    address: zookeeper:2181
+          retention.bytes: 4294967296
+          retention.ms: 259200000
+
   imagePullSecrets:
-    - name: regcred
+    - name: gcp-artifact-registry
 ```

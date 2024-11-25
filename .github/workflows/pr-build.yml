@@ -1,75 +1,67 @@
 name: build and validate
 on:
   schedule:
-    - cron: 30 2 * * 1
+    - cron: 30 8 * * 2
   push:
     branches:
       - main
   pull_request:
 
 jobs:
-  validate-helm-charts:
-    runs-on: ubuntu-22.04
+  build:
+    runs-on: self-hosted-x64-small
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: validate kafka-topic-creator chart
-        uses: hypertrace/github-actions/validate-charts@main
+      - name: Setup gradle auth
+        uses: traceableai/github-actions/gradle-setup@main
         with:
-          chart-path: ./kafka-topic-creator/helm/
-
-      - name: validate kstreams-app-version-checker chart
-        uses: hypertrace/github-actions/validate-charts@main
-        with:
-          chart-path: ./kstreams-app-version-checker/helm/
-
-  build:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        with:
-          username: ${{ secrets.DOCKERHUB_READ_USER }}
-          password: ${{ secrets.DOCKERHUB_READ_TOKEN }}
+          context-url: ${{ secrets.ARTIFACTORY_CONTEXT_URL }}
+          user: ${{ secrets.ARTIFACTORY_READ_USER }}
+          password: ${{ secrets.ARTIFACTORY_READ_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build kafka-topic-creator image
-        uses: docker/build-push-action@v3
+      - name: Build kafka-topic-creator Image
+        uses: docker/build-push-action@v6
         with:
-          tags: hypertrace/kafka-topic-creator:test
           context: kafka-topic-creator
-          cache-from: type=gha,scope=kafka-topic-creator
+          cache-from: type=registry,ref=${{ secrets.GCP_CACHE_ARTIFACT_REGISTRY }}/traceable/kafka-topic-creator
+          tags: ${{ secrets.GCP_ARTIFACT_REGISTRY }}/traceable/kafka-topic-creator:test
           load: true
 
-      - name: Build kstreams-app-version-checker image
-        uses: docker/build-push-action@v3
+      - name: Build kstreams-app-version-checker Image
+        uses: docker/build-push-action@v6
         with:
-          tags: hypertrace/kstreams-app-version-checker:test
           context: kstreams-app-version-checker
-          cache-from: type=gha,scope=kstreams-app-version-checker
+          cache-from: type=registry,ref=${{ secrets.GCP_CACHE_ARTIFACT_REGISTRY }}/traceable/kstreams-app-version-checker
+          tags: ${{ secrets.GCP_ARTIFACT_REGISTRY }}/traceable/kstreams-app-version-checker:test
           load: true
 
-      - name: Scan kafka-topic-creator image
-        uses: hypertrace/github-actions/trivy-image-scan@main
+      - name: Scan container image
+        uses: traceableai/github-actions/container-image-scan@main
         with:
-          image: hypertrace/kafka-topic-creator
+          image: ${{ secrets.GCP_ARTIFACT_REGISTRY }}/traceable/kafka-topic-creator
           tag: test
-          output-mode: github
-          category: kafka-topic-creator
 
       - name: Scan kstreams-app-version-checker image
-        uses: hypertrace/github-actions/trivy-image-scan@main
+        if: "!cancelled()"
+        uses: traceableai/github-actions/container-image-scan@main
         with:
-          image: hypertrace/kstreams-app-version-checker
+          image: ${{ secrets.GCP_ARTIFACT_REGISTRY }}/traceable/kstreams-app-version-checker
           tag: test
-          output-mode: github
-          category: kstreams-app-version-checker
+
+  validate-helm-charts:
+    runs-on: self-hosted-x64-small
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: validate charts
+        uses: hypertrace/github-actions/validate-charts@main

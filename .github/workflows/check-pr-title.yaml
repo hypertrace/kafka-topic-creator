@@ -1,0 +1,14 @@
+name: "PR Title Checker"
+on:
+  pull_request:
+    types:
+      - edited
+      - synchronize
+      - opened
+      - reopened
+jobs:
+  check:
+    runs-on: self-hosted-x64-small
+    steps:
+      - name: Check PR Title
+        uses: traceableai/github-actions/check-pr-title@main

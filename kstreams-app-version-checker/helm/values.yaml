@@ -1,5 +1,6 @@
 image:
-  repository: hypertrace/kstreams-app-version-checker
+  registry: "us-docker.pkg.dev/traceable-actions-386017/docker"
+  repository: traceable/kstreams-app-version-checker
   tagOverride: ""
   pullPolicy: IfNotPresent
 

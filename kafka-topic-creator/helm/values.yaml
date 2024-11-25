@@ -15,7 +15,8 @@
 ###########
 
 image:
-  repository: hypertrace/kafka-topic-creator
+  registry: "us-docker.pkg.dev/traceable-actions-386017/docker"
+  repository: traceable/kafka-topic-creator
   tag: ""
   pullPolicy: IfNotPresent
 

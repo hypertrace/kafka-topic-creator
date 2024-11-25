@@ -1,13 +1,17 @@
 pluginManagement {
   repositories {
     mavenLocal()
-    gradlePluginPortal()
-    maven("https://hypertrace.jfrog.io/artifactory/maven")
+    maven((extra.properties["artifactory_contextUrl"] as String) + "/gradle") {
+      credentials {
+        username = extra.properties["artifactory_user"] as String
+        password = extra.properties["artifactory_password"] as String
+      }
+    }
   }
 }
 
 plugins {
-  id("org.hypertrace.version-settings") version "0.2.0"
+  id("org.hypertrace.version-settings") version "0.2.1"
 }
 
 rootProject.name = "kafka-topic-creator"
