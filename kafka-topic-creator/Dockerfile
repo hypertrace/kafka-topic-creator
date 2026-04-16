@@ -1,4 +1,4 @@
-FROM golang:1.22.7 AS builder
+FROM golang:1.26.2 AS builder
 COPY src/main/go /opt
 WORKDIR /opt
 

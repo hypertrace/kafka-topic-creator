@@ -1,6 +1,6 @@
 module hypertrace.org/kafka-topic-creator
 
-go 1.22.7
+go 1.26.2
 
 require (
 	github.com/confluentinc/confluent-kafka-go/v2 v2.5.3
